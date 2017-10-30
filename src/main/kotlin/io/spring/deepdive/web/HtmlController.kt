@@ -15,35 +15,35 @@
  */
 package io.spring.deepdive.web
 
-import java.util.stream.StreamSupport
-
 import io.spring.deepdive.MarkdownConverter
 import io.spring.deepdive.repository.PostRepository
+import io.spring.deepdive.repository.UserRepository
 
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
-import org.springframework.ui.set
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import kotlin.streams.toList
+import org.springframework.web.reactive.result.view.Rendering
+
+import reactor.core.publisher.toMono
 
 @Controller
-class HtmlController(private val repository: PostRepository, private val markdownConverter: MarkdownConverter) {
+class HtmlController(private val userRepository: UserRepository, private val postRepository: PostRepository, private val markdownConverter: MarkdownConverter) {
 
     @GetMapping("/")
-    fun blog(model: Model): String {
-        val posts = repository.findAll()
-        val postDtos = StreamSupport.stream(posts.spliterator(), false).map { it.toDto(markdownConverter) }.toList()
-        model["title"] = "Blog"
-        model["posts"] = postDtos
-        return "blog"
-    }
+    fun blog() = Rendering.view("blog")
+            .model(mapOf(
+                    "title" to "Blog",
+                    "posts" to postRepository.findAll().flatMap { it.toDto(userRepository, markdownConverter) } ))
+            .build()
+
 
     @GetMapping("/{slug}")
-    fun post(@PathVariable slug: String, model: Model): String {
-        val post = repository.findById(slug).orElseThrow { IllegalArgumentException("Wrong post slug provided") }
-        model["post"] = post.toDto(markdownConverter)
-        return "post"
-    }
+    fun post(@PathVariable slug: String, model: Model) = Rendering.view("post")
+            .modelAttribute("post", postRepository
+                    .findById(slug)
+                    .flatMap { it.toDto(userRepository, markdownConverter) }
+                    .switchIfEmpty(IllegalArgumentException("Wrong post slug provided").toMono()))
+            .build()
 
 }

@@ -16,24 +16,40 @@
 package io.spring.deepdive.web
 
 import io.spring.deepdive.MarkdownConverter
+import io.spring.deepdive.model.Post
+import io.spring.deepdive.repository.PostEventRepository
 import io.spring.deepdive.repository.PostRepository
+import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/post")
-class PostController(private val repository: PostRepository, private val markdownConverter: MarkdownConverter) {
+class PostController(private val postRepository: PostRepository,
+                     private val postEventRepository: PostEventRepository,
+                     private val markdownConverter: MarkdownConverter) {
+
+    val notifications = postEventRepository.count().flatMapMany { postEventRepository.findWithTailableCursorBy().skip(it) }.share()
 
     @GetMapping("/")
-    fun findAll() = repository.findAll()
+    fun findAll() = postRepository.findAll()
 
     @GetMapping("/{slug}")
     fun findOne(@PathVariable slug: String, @RequestParam converter: String?) = when (converter) {
-        "markdown" -> repository.findById(slug).map { it.copy(
-                title = markdownConverter.invoke(it.title),
-                headline = markdownConverter.invoke(it.headline),
-                content = markdownConverter.invoke(it.content)) }
-        null -> repository.findById(slug)
+        "markdown" -> postRepository.findById(slug).map { it.copy(
+                title = markdownConverter.apply(it.title),
+                headline = markdownConverter.apply(it.headline),
+                content = markdownConverter.apply(it.content)) }
+        null -> postRepository.findById(slug)
         else -> throw IllegalArgumentException("Only markdown converter is supported")
     }
+
+    @PostMapping("/")
+    fun save(@RequestBody post: Post) = postRepository.save(post)
+
+    @DeleteMapping("/{slug}")
+    fun delete(@PathVariable slug: String) = postRepository.deleteById(slug)
+
+    @GetMapping("/notifications", produces = arrayOf(MediaType.TEXT_EVENT_STREAM_VALUE))
+    fun notifications() = notifications
 
 }
