@@ -1,15 +1,13 @@
 package io.spring.deepdive
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
-
-import org.springframework.web.client.getForObject
+import org.junit.Test
 
 class HtmlTests : AbstractIntegrationTests() {
 
     @Test
     fun `Assert content on blog page`() {
-        val body = restTemplate.getForObject<String>("/")
+        val body = restTemplate.getForObject("/", String::class.java)
         assertThat(body)
                 .contains("Reactor Bismuth is out")
                 .contains("September 28th")
@@ -19,7 +17,7 @@ class HtmlTests : AbstractIntegrationTests() {
 
     @Test
     fun `Assert content on blog post page`() {
-        val body = restTemplate.getForObject<String>("/spring-framework-5-0-goes-ga")
+        val body = restTemplate.getForObject("/spring-framework-5-0-goes-ga", String::class.java)
         assertThat(body)
                 .contains("Spring Framework 5.0 goes GA")
                 .contains("Dear Spring community")
