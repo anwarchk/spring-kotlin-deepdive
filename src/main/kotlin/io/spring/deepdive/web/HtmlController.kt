@@ -37,6 +37,7 @@ class HtmlController(private val userRepository: UserRepository, private val pos
                     "posts" to postRepository.findAll().flatMap { it.toDto(userRepository, markdownConverter) } ))
             .build()
 
+
     @GetMapping("/{slug}")
     fun post(@PathVariable slug: String, model: Model) = Rendering.view("post")
             .modelAttribute("post", postRepository
