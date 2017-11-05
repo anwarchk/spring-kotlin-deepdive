@@ -20,7 +20,7 @@ import java.time.LocalDateTime
 import io.spring.deepdive.model.Post
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpMethod
@@ -36,7 +36,7 @@ class PostJsonApiTests : AbstractIntegrationTests() {
 
     @Test
     fun `Verify findOne JSON API`() {
-        val post = restTemplate.getForObject("/api/post/reactor-bismuth-is-out", Post::class.java)
+        val post = restTemplate.getForObject("/api/post/reactor-bismuth-is-out", Post::class.java)!!
         assertThat(post.title).isEqualTo("Reactor Bismuth is out")
         assertThat(post.headline).startsWith("It is my great pleasure to")
         assertThat(post.content).startsWith("With the release of")

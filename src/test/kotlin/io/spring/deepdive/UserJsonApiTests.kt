@@ -16,12 +16,12 @@
 package io.spring.deepdive
 
 import io.spring.deepdive.model.User
-import org.junit.Test
 
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpMethod
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 
 class UserJsonApiTests : AbstractIntegrationTests() {
 
@@ -33,7 +33,7 @@ class UserJsonApiTests : AbstractIntegrationTests() {
 
     @Test
     fun `Verify findOne JSON API`() {
-        val user = restTemplate.getForObject("/api/user/MkHeck", User::class.java)
+        val user = restTemplate.getForObject("/api/user/MkHeck", User::class.java)!!
         assertThat(user.login).isEqualTo("MkHeck")
         assertThat(user.firstname).isEqualTo("Mark")
         assertThat(user.lastname).isEqualTo("Heckler")
